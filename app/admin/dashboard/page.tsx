@@ -1,102 +1,95 @@
 "use client";
 
-import Link from "next/link";
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
-import { siteConfig } from "@/data/site-config";
-import { Logo } from "@/components/ui/Logo";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Newspaper, CalendarDays, LogOut, Plus } from "lucide-react";
 
-const FOOTER_LINKS = [
-  {
-    title: "Детский сад",
-    links: [
-      { href: "/about", label: "О нас" },
-      { href: "/groups", label: "Группы" },
-      { href: "/news", label: "Новости" },
-    ],
-  },
-  {
-    title: "Родителям",
-    links: [
-      { href: "/enrollment", label: "Запись в сад" },
-      { href: "/contacts", label: "Контакты" },
-    ],
-  },
-];
+export default function AdminDashboard() {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"news" | "schedule">("news");
+  const [isAuth, setIsAuth] = useState(false);
 
-export function Footer() {
+  useEffect(() => {
+    if (localStorage.getItem("admin_token") !== "true") {
+      router.push("/admin");
+    } else {
+      setIsAuth(true);
+    }
+  }, [router]);
+
+  if (!isAuth) return null;
+
+  const handleLogout = () => {
+    localStorage.removeItem("admin_token");
+    router.push("/admin");
+  };
+
   return (
-    <footer className="bg-white border-t border-border pt-12 lg:pt-16 pb-8">
+    <main className="min-h-screen bg-bg-alt pb-20 pt-24 lg:pt-32">
       <div className="container-x">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 pb-8 lg:pb-12 border-b border-border">
-          
-          {/* Лого и описание */}
-          <div className="lg:col-span-4">
-            <Logo /> {/* <-- Убрали пропсы variant и size */}
-            <p className="text-ink-light mt-4 lg:mt-6 text-sm leading-relaxed max-w-xs">
-              Частный детский сад с домашней и безопасной средой. Мы создаем условия для гармоничного развития каждого ребенка.
+        {/* Шапка дашборда */}
+        <div className="bg-white rounded-lg border border-border p-4 lg:p-6 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-xl lg:text-2xl font-extrabold text-ink">Управление сайтом</h1>
+          <button 
+            onClick={handleLogout} 
+            className="flex items-center gap-2 bg-ink text-white hover:bg-ink/90 px-4 py-2 rounded-md font-bold text-sm transition-colors"
+          >
+            <LogOut className="w-4 h-4" /> Выйти
+          </button>
+        </div>
+
+        {/* Вкладки */}
+        <div className="flex gap-2 border-b border-border mb-6 lg:mb-8 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab("news")}
+            className={`flex items-center gap-2 px-4 lg:px-6 py-3 font-bold text-sm transition-colors border-b-2 whitespace-nowrap ${
+              activeTab === "news" ? "border-accent text-accent" : "border-transparent text-ink-light hover:text-ink"
+            }`}
+          >
+            <Newspaper className="w-4 h-4" /> Новости
+          </button>
+          <button
+            onClick={() => setActiveTab("schedule")}
+            className={`flex items-center gap-2 px-4 lg:px-6 py-3 font-bold text-sm transition-colors border-b-2 whitespace-nowrap ${
+              activeTab === "schedule" ? "border-accent text-accent" : "border-transparent text-ink-light hover:text-ink"
+            }`}
+          >
+            <CalendarDays className="w-4 h-4" /> Расписание
+          </button>
+        </div>
+
+        {/* Контент вкладок */}
+        {activeTab === "news" && (
+          <div className="bg-white p-6 rounded-lg shadow-soft border border-border">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <h2 className="text-xl font-bold text-ink">Управление новостями</h2>
+              <button className="flex items-center gap-2 bg-accent text-ink px-4 py-2 rounded-md font-bold text-sm hover:bg-accent-hover transition-colors">
+                <Plus className="w-4 h-4" /> Добавить
+              </button>
+            </div>
+            <p className="text-ink-light text-sm bg-bg-alt p-4 rounded-md border border-border">
+              Здесь будет список новостей с кнопками редактирования и удаления. 
+              Пока это заглушка — в следующем шаге мы подключим базу данных (SQLite), 
+              чтобы новости реально сохранялись.
             </p>
           </div>
+        )}
 
-          {/* Ссылки */}
-          {FOOTER_LINKS.map((col) => (
-            <div key={col.title} className="lg:col-span-2">
-              <h4 className="font-bold text-sm text-ink mb-4 lg:mb-6">
-                {col.title}
-              </h4>
-              <ul className="space-y-3">
-                {col.links.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} className="text-sm text-ink-light hover:text-accent transition-colors">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+        {activeTab === "schedule" && (
+          <div className="bg-white p-6 rounded-lg shadow-soft border border-border">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <h2 className="text-xl font-bold text-ink">Управление расписанием</h2>
+              <button className="flex items-center gap-2 bg-accent text-ink px-4 py-2 rounded-md font-bold text-sm hover:bg-accent-hover transition-colors">
+                <Plus className="w-4 h-4" /> Добавить
+              </button>
             </div>
-          ))}
-
-          {/* Контакты */}
-          <div className="lg:col-span-4">
-            <h4 className="font-bold text-sm text-ink mb-4 lg:mb-6">
-              Контакты
-            </h4>
-            <ul className="space-y-4 text-sm text-ink-light">
-              <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-                <span>{siteConfig.address}</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Phone className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-                <a href={`tel:${siteConfig.phone.replace(/[^0-9+]/g, "")}`} className="hover:text-accent transition-colors">
-                  {siteConfig.phone}
-                </a>
-              </li>
-              <li className="flex items-start gap-3">
-                <Mail className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-                <a href="mailto:info@toptyzhka.ru" className="hover:text-accent transition-colors">
-                  info@toptyzhka.ru
-                </a>
-              </li>
-              <li className="flex items-start gap-3">
-                <Clock className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-                <span>{siteConfig.workHours}</span>
-              </li>
-            </ul>
+            <p className="text-ink-light text-sm bg-bg-alt p-4 rounded-md border border-border">
+              Здесь будет таблица с расписанием занятий. Позже мы сделаем так, 
+              чтобы изменения сразу отображались на странице «Группы».
+            </p>
           </div>
-        </div>
-
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-6 lg:pt-8 text-xs text-ink-light">
-          <p className="text-center md:text-left">© {new Date().getFullYear()} {siteConfig.name}. Все права защищены.</p>
-          <div className="flex gap-4 md:gap-6">
-            <Link href="/privacy" className="hover:text-ink transition-colors">
-              Конфиденциальность
-            </Link>
-            <Link href="/admin" className="hover:text-ink transition-colors">
-              Админ-панель
-            </Link>
-          </div>
-        </div>
+        )}
       </div>
-    </footer>
+    </main>
   );
 }
